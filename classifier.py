@@ -23,6 +23,17 @@ class ClassifierClass(object):
        	#returnkey = max(result, key=result.get)
         return result
 
+    def getbaseline(self, data):
+        classes = {}
+
+        for d in data:
+            if(d["class"] in classes):
+                classes[d["class"]] += 1
+            else:
+                classes[d["class"]] = 1
+        self.mostfreq = max(classes, key=classes.get)
+        return classes
+
     @classmethod
     def train(cls, rawdata, k=1):
         # The following line creates a new object of type Classifier:
@@ -78,27 +89,31 @@ class ClassifierClass(object):
             for word, count in typedata.items():
                 typedata[word] = math.log(count/length) #The probability, not in Log format!!
                 
-
+        print("Used k:", k)
         return classifier
 
-def ClassifierAccuracy(classifier, data):
+def accuracy(classifier, data):
     tot = len(data)
     correct = 0
     for d in data:
-        if(classifier.predict(d["words"]) == d["class"]):
+        #print(classifier.predict(d["words"]), d["class"])
+        pred = classifier.predict(d["words"])
+        predclass = max(pred, key=pred.get)
+        if(predclass == d["class"]):
             correct += 1
     
     return correct/tot
 
-def ClassifierPrecision(classifier, c, documents):
+def precision(classifier, c, documents):
     tot = len(documents)
     truepos = 0
     falsepos = 0
     for d in documents:
         predicted = classifier.predict(d["words"])
-        if(d["class"] == predicted and d["class"] == c):
+        predictedclass = max(predicted, key=predicted.get)
+        if(d["class"] == predictedclass and d["class"] == c):
             truepos += 1
-        elif(d["class"] != predicted and d["class"] != c):
+        elif(d["class"] != predictedclass and d["class"] != c):
             falsepos += 1
             
         
@@ -107,15 +122,16 @@ def ClassifierPrecision(classifier, c, documents):
     
     return(truepos/(truepos+falsepos))
 
-def ClassifierRecall(classifier, c, documents):
+def recall(classifier, c, documents):
     tot = len(documents)
     truepos = 0
     falseneg = 0
     for d in documents:
         predicted = classifier.predict(d["words"])
-        if(d["class"] == predicted and d["class"] == c):
+        predictedclass = max(predicted, key=predicted.get)
+        if(d["class"] == predictedclass and d["class"] == c):
             truepos += 1
-        elif(d["class"] != predicted and predicted != c):
+        elif(d["class"] != predictedclass and predictedclass != c):
             falseneg += 1
             
         
@@ -123,3 +139,6 @@ def ClassifierRecall(classifier, c, documents):
             return(float('NaN'))
 
     return(truepos/(truepos+falseneg))
+
+def F1(p, r):
+    return (2*p*r)/(p+r)
