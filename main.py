@@ -94,7 +94,8 @@ if __name__ == "__main__":
 	print("-"*30)
 	sorted_x = sorted(sentences.items(), key=operator.itemgetter(1), reverse=True)
 	for sentence in sorted_x[:10]:
-		print(sentence)
+		print("Prob: %s \t %s" % (sentence[1], sentence[0]))
+		#print(sentence)
 
 	#print("Skipped: "+ str(skipped))
 	#print(sorted_x)
