@@ -70,21 +70,42 @@ def postprocess_output(s):
     s = re.sub('([.!?]\\s+[a-z])', lambda c: c.group(1).upper(), s) # capitalize letters following terminated sentences
     return s
 
+def sentence_wordcount(sentence):
+	s = re.sub('[()]', r'', sentence)  # remove certain punctuation chars
+	s = re.sub(r"(\.)|(\?)|(\!)|(\,)|(\")|(\')", r"", s) # remove punctuations because we use this as a wordcount
+	s = re.sub('([.-])+', r'\1', s) # collapse multiples of certain chars
+	s = re.sub('([^0-9])([.,!?])([^0-9])', r'\1 \2 \3', s)  # pad sentence punctuation chars with whitespace
+	return s.split()
 
-def gengram_sentence(corpus, N=3, sentence_count=1, start_seq=None):
+#This generates a good start sequence
+def gengram_startseq(data):
+	start_seq = ".!?"
+	while True:
+		correct = True
+		start_seq = random.choice(list(data.keys()));
+		for char in start_seq:
+			if(len(re.findall(r"[a-zA-z]|[1-9]|\ |(\")|(\')", char)) == 0):# Do not have any other characters in the first words.
+				correct = False
+				break
+		if(correct):
+			return start_seq
+	return start_seq #Fallback, just return something!
+
+def gengram_sentence(corpus, N=3, sentence_count=1, start_seq=None, min_words=4):
     """ Generate a random sentence based on input text corpus """
 
     ngrams = make_ngrams(corpus.split(SEP), N)
     counts = ngram_freqs(ngrams)
 
     if start_seq is None:
-        start_seq = random.choice(list(counts.keys()));
+    	start_seq = gengram_startseq(counts) #More advanced start_seq generator.
     rand_text = start_seq.lower();
 
     sentences = 0;
     while sentences < sentence_count:
         rand_text += SEP + next_word(rand_text, N, counts);
-        sentences += 1 if rand_text.endswith(('.','!', '?')) else 0
+        if(len(sentence_wordcount(rand_text)) >= min_words): #Is it less than words? Dont finish sentence
+       		sentences += 1 if rand_text.endswith(('.','!', '?')) else 0
 
     return postprocess_output(rand_text);
 

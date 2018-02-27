@@ -80,3 +80,46 @@ class ClassifierClass(object):
                 
 
         return classifier
+
+def ClassifierAccuracy(classifier, data):
+    tot = len(data)
+    correct = 0
+    for d in data:
+        if(classifier.predict(d["words"]) == d["class"]):
+            correct += 1
+    
+    return correct/tot
+
+def ClassifierPrecision(classifier, c, documents):
+    tot = len(documents)
+    truepos = 0
+    falsepos = 0
+    for d in documents:
+        predicted = classifier.predict(d["words"])
+        if(d["class"] == predicted and d["class"] == c):
+            truepos += 1
+        elif(d["class"] != predicted and d["class"] != c):
+            falsepos += 1
+            
+        
+        if(classifier.predict(d["words"]) == None):
+            return(float('NaN'))
+    
+    return(truepos/(truepos+falsepos))
+
+def ClassifierRecall(classifier, c, documents):
+    tot = len(documents)
+    truepos = 0
+    falseneg = 0
+    for d in documents:
+        predicted = classifier.predict(d["words"])
+        if(d["class"] == predicted and d["class"] == c):
+            truepos += 1
+        elif(d["class"] != predicted and predicted != c):
+            falseneg += 1
+            
+        
+        if(classifier.predict(d["words"]) == None):
+            return(float('NaN'))
+
+    return(truepos/(truepos+falseneg))
